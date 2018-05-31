@@ -75,5 +75,12 @@ public class User extends org.telegram.telegrambots.api.objects.User{
         } else games = 1;
     }
 
+    public String getName() {
+        if (lastName != null) {
+            return firstName + " " + lastName;
+        }
+        return firstName;
+    }
+
 
 }

@@ -7,6 +7,7 @@ import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,18 +19,36 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractTelegramBot extends TelegramLongPollingBot{
 
-    String[] buttons = {"хуи", "пики"};
 
-    static boolean game = false;
+    static final Long chatId = -313649000L;
+
+    String[] buttons = {"хуи", "пики"};
+    
+    static Integer topicCount = 6;
+    static Game game;
+    static boolean gameStarted = false;
+    static GameState gameState;
+
+    public enum GameState {
+        START_IN_PROGRESS,
+        BEFORE_TOPIC,
+        BEFORE_FIRST_QUESTION,
+        BEFORE_QUESTION,
+        QUESTION,
+        ANSWER,
+        AFTER_QUESTION,
+        SPECIAL_SCORE,
+        JUDGE_DECISION,
+        REGISTRATION,
+        BEFORE_GAME,
+        AFTER_GAME
+    }
 
     public SendMessage sendMsgKeyboard(Long chatId, String text, String[] buttons) {
         SendMessage sendMessage = new SendMessage();
-      //  sendMessage.enableMarkdown(true);
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         sendMessage.setParseMode(ParseMode.HTML);
-       // replyKeyboardMarkup.setSelective(true);
-      //  replyKeyboardMarkup.setResizeKeyboard(true);
         List<KeyboardRow> keyboard = new ArrayList<>();
         List <KeyboardButton> keyboardButtons =  Arrays.stream(buttons).map(KeyboardButton::new).collect(Collectors.toList());
         KeyboardRow keyboardRow = new KeyboardRow();
@@ -52,6 +71,11 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot{
     }
 
 
+
+    public static void createGame(Game game) throws TelegramApiException {
+        AbstractTelegramBot.game = game;
+        gameState = GameState.START_IN_PROGRESS;
+    }
 
 
 }

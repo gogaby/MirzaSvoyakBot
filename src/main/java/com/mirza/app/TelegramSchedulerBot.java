@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Created by yach0217 on 29.05.2018.
  */
 @Component
-public class TelegramSchedulerBot extends AbstractTelegramBot {
+public class TelegramSchedulerBot extends AbstractTelegramBot{
 
 
     @Autowired
@@ -41,11 +41,9 @@ public class TelegramSchedulerBot extends AbstractTelegramBot {
     Map<Integer,com.mirza.model.User> registeredUsers = new HashMap<>();
     Map<Integer,com.mirza.model.User> usersCache = new HashMap<>();
 
-    private int topicCount = 6;
-
     @Override
     public void onUpdateReceived(Update update) {
-        if (!game) {
+        if (!gameStarted) {
             Message message = update.getMessage();
             Chat chat = message.getChat();
             try {
@@ -72,10 +70,7 @@ public class TelegramSchedulerBot extends AbstractTelegramBot {
                 break;
             case "старт":
                 execute(new SendMessage(chatId, "Игра скоро начнется"));
-                game = true;
-                break;
-            case "стоп":
-                game = false;
+                createGame(new Game(registeredUsers));
                 break;
             case "список":
                 execute(new SendMessage(chatId, "Список пакетов: \n" + StringUtils.join(questionRepository.getPackageList(),'\n')));
@@ -83,12 +78,14 @@ public class TelegramSchedulerBot extends AbstractTelegramBot {
         }
     }
 
+    
+
     private void registerUser(User from, Long chatId) throws TelegramApiException {
         if (!registeredUsers.containsKey(from.getId())){
             com.mirza.model.User user = usersCache.get(from.getId());
             if (user == null ){
                 if (!userRepository.userExist(from)){
-                    execute(new SendMessage(chatId, "Новый пользователь зарегистрирован в базе"));
+                    execute(new SendMessage(chatId, "Новый пользователь зарегистрирован в базе: ") );
                     userRepository.registerUser(from);
                 }
                 user = userRepository.getUser(from.getId());
@@ -105,7 +102,7 @@ public class TelegramSchedulerBot extends AbstractTelegramBot {
     }
 
     private void sendGameRegisterInfo(Long chatId) throws TelegramApiException {
-        String players = StringUtils.join(registeredUsers.values().stream().map(user -> StringUtils.defaultString(user.getFirstName()) + " " + StringUtils.defaultString(user.getLastName()) + " (" +
+        String players = StringUtils.join(registeredUsers.values().stream().map(user -> user.getName() + " (" +
                 user.getRating() + ")").collect(Collectors.toList()), ", ");
         String message = "Стандартная игра\n" + "Тем: " + topicCount +  "\nИгроки: " + StringUtils.defaultString(players);
         execute(new SendMessage(chatId, message));
@@ -143,7 +140,7 @@ public class TelegramSchedulerBot extends AbstractTelegramBot {
         if (message.getText() != null) {
             switch (message.getText()) {
                 case "+":
-                    TopicSet topicSet = questionRepository.getTopicSet(5);
+                    TopicSet topicSet = questionRepository.getRandomTopicSet(5);
                     execute(new SendMessage(message.getChatId(), topicSet.getShortName()));
                     execute(new SendMessage(message.getChatId(), topicSet.getDescription()));
                     break;

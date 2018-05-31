@@ -1,6 +1,10 @@
 package com.mirza.app;
 
+import com.mirza.database.QuestionRepository;
+import com.mirza.model.TopicSet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Chat;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
@@ -11,27 +15,34 @@ import org.telegram.telegrambots.api.objects.Update;
 @Component
 public class TelegramGameBot extends AbstractTelegramBot {
 
+    @Autowired
+    private QuestionRepository questionRepository;
 
     @Override
     public void onUpdateReceived(Update update) {
-        if(game) {
-            Message message = update.getMessage();
-            Chat chat = message.getChat();
+         Message message = update.getMessage();
+         Chat chat = message.getChat();
             try {
                 switch (message.getText()){
-                    case "стоп":
-                        game = false;
+                    case "старт":
+                        Thread.sleep(3000);
+                        if (gameState == GameState.START_IN_PROGRESS){
+                            TopicSet topicSet = questionRepository.getRandomTopicSet(topicCount);
+                            execute(new SendMessage(chatId, "Игра началась"));
+
+                        }
+                        //get gameInfo
                         break;
-                    case "хуи":
-                        execute(sendMessageRemoveKeyboard(chat.getId()));
+                    case "стоп":
+                        gameStarted = false;
+                        execute(new SendMessage(chatId, "Игра остановлена"));
                         break;
                     default:
-                        execute(sendMsgKeyboard(chat.getId(), "Ваш ответ?", buttons));
+                     //   execute(sendMsgKeyboard(chat.getId(), "Ваш ответ?", buttons));
                 }
             } catch (Exception e) {
                 System.out.println(e.fillInStackTrace().getMessage());
             }
-        }
     }
 
     @Override
@@ -43,4 +54,5 @@ public class TelegramGameBot extends AbstractTelegramBot {
     public String getBotToken() {
         return "598001641:AAHAvtHs5Q_o3EtXRMZjwmSFVsrlohHQQEc";
     }
+
 }

@@ -24,18 +24,9 @@ public class EnvironmentConfiguration {
         ApiContextInitializer.init();
     }
 
-    @Bean
-    TelegramGameBot telegramGameBot(){
-        return new TelegramGameBot();
-    }
 
     @Bean
-    TelegramSchedulerBot TelegramSchedulerBot(){
-        return new TelegramSchedulerBot();
-    }
-
-    @Bean
-    TelegramBotsApi telegramBotsApi(@Autowired TelegramGameBot telegramGameBot, @Autowired TelegramSchedulerBot telegramSchedulerBot) throws TelegramApiRequestException {
+    TelegramBotsApi telegramBotsApi(TelegramGameBot telegramGameBot, TelegramSchedulerBot telegramSchedulerBot) throws TelegramApiRequestException {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         telegramBotsApi.registerBot(telegramGameBot);
         telegramBotsApi.registerBot(telegramSchedulerBot);
