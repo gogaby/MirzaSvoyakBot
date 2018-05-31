@@ -44,7 +44,8 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot{
     public SendMessage sendMessageRemoveKeyboard(Long chatId){
         SendMessage sendMessage = new SendMessage();
         ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
-
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("Верно!");
         sendMessage.setReplyMarkup(replyKeyboardRemove);
         sendMessage.setParseMode(ParseMode.HTML);
         return sendMessage;
